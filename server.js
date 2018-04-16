@@ -3,6 +3,7 @@ const request = require('request');
 const hbs = require('hbs')
 const geocode = require('./WeatherCopy/gmaps');
 const currentWeather = require('./WeatherCopy/weather');
+const getPic = require('./WeatherCopy/picsAPI')
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const urlencodedParser = bodyParser.urlencoded({ extended: false});
@@ -43,71 +44,95 @@ app.get('/', (request, response) => {
 });
 
 app.post('/postResult', urlencodedParser, (request, response) => {
-	var topTitle = request.body.topTitle
-	var topContent = request.body.topContent
-	console.log(topTitle + ' ' + topContent);
-	response.redirect('/info')
-})
+	var userPic = request.body.picture
+	var userWeath = request.body.weather
+	var picURL = ''
+	var picURL2 = ''
 
-app.get('/info', (request, response) => {
-	response.render('me.hbs', {
-		firstLink: '/',
-		fLinkDisp: 'HOME',
-		secondLink: '/weather/vancouer',
-		sLinkDisp: 'Weather',
-		title: 'About Me',
-		image: 'http://kb4images.com/images/picture/37509081-picture.jpg'
-	})
-})
+	if ((userWeath == '') && (userPic == '')) {
+		response.send('you must enter a value in the picture field or weather field!')
+	}
 
-app.get('/weather/:location', (request, response) => {
-	var longitude = '',
-		latitude = '';
+	if (userWeath == ''){
+			getPic.getPicture(userPic, (results) => {
+				if (results === 'connection error') {		// when receives connection error flag
+					response.send('Cannot connect to Pixabay!');
+				} else if (results === 'find error') {		//when receives cannot find error flag
+					response.send('Cannot find this Picture!');
+				} else {
+					picURL = results.picture;
+					picURL2 = results.picture2;
+					response.render('me.hbs', {
+						title: 'picture',
+						image: picURL,
+						image2: picURL2
+					})
+				}
+			});
+	}
 
-	var weatherStatus = '',
-		precipPerc = '',
-		temperature = '';
+	else if (userPic == ''){
+		var longitude = '',
+			latitude = '';
 
-	var locate = request.params.location
+		var weatherStatus = '',
+			precipPerc = '',
+			temperature = '';
 
-	geocode.getAddress(locate, (results) => {
-		if (results === 'connection error') {		// when receives connection error flag
-			response.send('Cannot connect to google maps!');
-		} else if (results === 'find error') {		//when receives cannot find error flag
-			response.send('Cannot find this location!');
-		} else {
-			longitude = results.longitude;			//returning and setting longitude variable
-			latitude = results.latitude;				//returning and setting latitude variable
-		}
-	})
+		console.log(userWeath);	
 
-	setTimeout(() => {				//set timeout here incase for some reason this runs before getAddress
-		currentWeather.getWeather(longitude, latitude, (results) => {
-			if (results === 'connect error') {
-				response.send('Cannot connect to weather database!');
-			} else if (results === 'find error') {
-				response.send('Cannot find weather with destination provided!');
+		var weatherID = '';
+
+		geocode.getAddress(userWeath, (results) => {
+			if (results === 'connection error') {		// when receives connection error flag
+				response.send('Cannot connect to google maps!');
+			} else if (results === 'find error') {		//when receives cannot find error flag
+				response.send('Cannot find this location!');
 			} else {
-				weatherStatus = results.weather 
-				precipPerc = results.precipitation 
-				temperature = results.temperature
+				longitude = results.longitude;			//returning and setting longitude variable
+				latitude = results.latitude;				//returning and setting latitude variable
 			}
 		})
-	}, 700);
-	setTimeout(() => {	
-		response.render('weather.hbs', {
-			firstLink: '/',
-			fLinkDisp: 'HOME',
-			secondLink: '/info',
-			sLinkDisp: 'About Me',
-			title: 'Weather',
-			weather: weatherStatus,
-			precip: precipPerc,
-			temp: temperature,
-			location: locate
-		})
-	}, 2000);
-})
+
+		setTimeout(() => {				//set timeout here incase for some reason this runs before getAddress
+			currentWeather.getWeather(longitude, latitude, (results) => {
+				if (results === 'connect error') {
+					response.send('Cannot connect to weather database!');
+				} else if (results === 'find error') {
+					response.send('Cannot find weather with destination provided!');
+				} else {
+					weatherStatus = results.weather 
+					precipPerc = results.precipitation 
+					temperature = results.temperature
+
+					if (weatherStatus == 'rain') {
+						weatherID = '09'
+					} else if (weatherStatus == 'partly-cloudy-day') {
+						weatherID = '04'
+					} else if (weatherStatus == 'clear') {
+						weatherID = '01'
+					} else if (weatherStatus == 'snow') {
+						weatherID = '13'
+					}
+				}
+			})
+		}, 700);
+		setTimeout(() => {	
+			var iconURL = `http://openweathermap.org/img/w/${weatherID}d.png`;
+			response.render('weather.hbs', {
+				weather: weatherStatus,
+				precip: precipPerc,
+				temp: temperature,
+				location: userWeath,
+				image: iconURL
+			})
+		}, 2000);
+	}
+
+	else{
+		response.send('you must only enter one field or the other!');
+	}
+});
 
 app.listen(port, () => {
     console.log('Server is up on the port 8080');
