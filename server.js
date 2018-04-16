@@ -1,62 +1,107 @@
 const express = require('express');
-const hbs = require('hbs');
-const fs = require('fs');
-
-const port = process.env.PORT || 8080;
+const request = require('request');
+const hbs = require('hbs')
+const geocode = require('./WeatherCopy/gmaps');
+const currentWeather = require('./WeatherCopy/weather');
 
 var app = express();
+var strMain = 'About Me Page'
+var strWeath = 'Check Local Weather'
+var strHome = 'Home'
+var showMainLink = strMain.link('/public/me.html')
+var showWeathlink = strWeath.link('/weather/vancouver')
+var showHome = strHome.link('/')
 
 hbs.registerPartials(__dirname + '/views/partials');
-
 app.set('view engine', 'hbs');
-app.use(express.static(__dirname + '/public'));
 
-hbs.registerHelper('getCurrentYear', () => {
-	return new Date().getFullYear();
-});
-
-hbs.registerHelper('message', (text) => {
-	return text.toUpperCase()
-})
+app.use('/public', express.static(__dirname + '/public'));
 
 app.use((request, response, next) => {
-	// response.render('maint.hbs', {});
-	var time = new Date().toString();
+	response.render('maint.hbs', {});
+	/*var time = new Date().toString();
 	var log = `${time}: ${request.method} ${request.url}`;
 	fs.appendFile('server.log', log + '\n', (error) => {
 		if (error) {
 			console.log('Unable to log message');
 		}
-	});
-	next();
+	});*/
+
+});
+
+hbs.registerHelper('getCurrentYear', () => {
+	return new Date().getFullYear();
 });
 
 app.get('/', (request, response) => {
-	response.send({
-		name: 'Your name',
-		school: [
-			'BCIT',
-			'SFU',
-			'UBC'
-		]
-	});
+	var strMain = 'About Me Page'
+	var strWeath = 'Check Local Weather'
+	var showMainLink = strMain.link('/info')
+	var showWeathlink = strWeath.link('/weather/vancouver')
+	response.send(`${showMainLink}	${showWeathlink}`)
 });
 
 app.get('/info', (request, response) => {
-	response.render('about.hbs', {
-		title: 'About page',
-		year: new Date().getFullYear(),
-		welcome: 'Hello'
-	});
-});
-
-app.get('/404', (request, response) => {
-	response.send({
-		error: 'Page not found'
+	response.render('me.hbs', {
+		firstLink: '/',
+		fLinkDisp: 'HOME',
+		secondLink: '/weather/vancouer',
+		sLinkDisp: 'Weather',
+		title: 'About Me',
+		image: 'http://kb4images.com/images/picture/37509081-picture.jpg'
 	})
 })
 
+app.get('/weather/:location', (request, response) => {
+	var longitude = '',
+		latitude = '';
 
-app.listen(port, () => {
-	console.log(`Server is up on the port ${port}`);
+	var weatherStatus = '',
+		precipPerc = '',
+		temperature = '';
+
+	var locate = request.params.location
+
+	geocode.getAddress(locate, (results) => {
+		if (results === 'connection error') {		// when receives connection error flag
+			response.send('Cannot connect to google maps!');
+		} else if (results === 'find error') {		//when receives cannot find error flag
+			response.send('Cannot find this location!');
+		} else {
+			longitude = results.longitude;			//returning and setting longitude variable
+			latitude = results.latitude;				//returning and setting latitude variable
+		}
+	})
+
+	setTimeout(() => {				//set timeout here incase for some reason this runs before getAddress
+		currentWeather.getWeather(longitude, latitude, (results) => {
+			if (results === 'connect error') {
+				response.send('Cannot connect to weather database!');
+			} else if (results === 'find error') {
+				response.send('Cannot find weather with destination provided!');
+			} else {
+				weatherStatus = results.weather 
+				precipPerc = results.precipitation 
+				temperature = results.temperature
+			}
+		})
+	}, 700);
+	setTimeout(() => {	
+		response.render('weather.hbs', {
+			firstLink: '/',
+			fLinkDisp: 'HOME',
+			secondLink: '/info',
+			sLinkDisp: 'About Me',
+			title: 'Weather',
+			weather: weatherStatus,
+			precip: precipPerc,
+			temp: temperature,
+			location: locate
+		})
+	}, 2000);
+})
+
+app.listen(8080, () => {
+    console.log('Server is up on the port 8080');
+    // here add the logic to return the weather based on the statically provided location and save it inside the weather variable
 });
