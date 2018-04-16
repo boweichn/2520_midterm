@@ -3,6 +3,7 @@ const request = require('request');
 const hbs = require('hbs')
 const geocode = require('./WeatherCopy/gmaps');
 const currentWeather = require('./WeatherCopy/weather');
+const fs = require('fs');
 
 var app = express();
 var strMain = 'About Me Page'
@@ -16,6 +17,8 @@ hbs.registerPartials(__dirname + '/views/partials');
 app.set('view engine', 'hbs');
 
 app.use('/public', express.static(__dirname + '/public'));
+
+const port = process.env.PORT || 8080;
 
 /* app.use((request, response, next) => {
 	response.render('maint.hbs', {});
@@ -101,7 +104,7 @@ app.get('/weather/:location', (request, response) => {
 	}, 2000);
 })
 
-app.listen(8080, () => {
+app.listen(port, () => {
     console.log('Server is up on the port 8080');
     // here add the logic to return the weather based on the statically provided location and save it inside the weather variable
 });
