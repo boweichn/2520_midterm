@@ -17,17 +17,17 @@ app.set('view engine', 'hbs');
 
 app.use('/public', express.static(__dirname + '/public'));
 
-app.use((request, response, next) => {
+/* app.use((request, response, next) => {
 	response.render('maint.hbs', {});
-	/*var time = new Date().toString();
+	var time = new Date().toString();
 	var log = `${time}: ${request.method} ${request.url}`;
 	fs.appendFile('server.log', log + '\n', (error) => {
 		if (error) {
 			console.log('Unable to log message');
 		}
-	});*/
+	});
 
-});
+}); */
 
 hbs.registerHelper('getCurrentYear', () => {
 	return new Date().getFullYear();
