@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<style>
+#info {
+	top: 0; bottom: 0;
+	left: 0; right: 0;
+	height: 75vh; width: 75vw;
+	margin: auto;
+	position: absolute;
+}
+
+#box {
+	top: 0; bottom: 0;
+	left: 0; right: 0;
+	text-align: center;
+	height: 50%; width: 50%;
+	margin: auto;
+	position: absolute;
+}
+</style>	
+	<meta charset='utf-8'>
+	<title>{{title}}</title>
+</head>
+
+<body>
+	<div id='info'>
+		<a href={{firstLink}}>{{fLinkDisp}}</a>
+		<a href={{secondLink}}>{{sLinkDisp}}</a>
+		<div id='box'>
+			<h1>Today's Weather at {{location}}</h1>
+			<p>Weather: {{weather}}<br>
+			Precipitation Chance: {{precip}}<br> 
+			Temperature: {{temp}}C<br> 
+			</p>
+			<img src={{image}} />
+				{{> footer}}
+		</div>
+	</div>
+</body>
+
+</html>

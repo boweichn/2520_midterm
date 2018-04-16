@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<style>
+#info {
+	top: 0; bottom: 0;
+	left: 0; right: 0;
+	height: 75vh; width: 75vw;
+	margin: auto;
+	position: absolute;
+}
+
+#box {
+	top: 0; bottom: 0;
+	left: 0; right: 0;
+	text-align: center;
+	height: 50%; width: 50%;
+	margin: auto;
+	position: absolute;
+}
+</style>	
+	<meta charset='utf-8'>
+	<title>{{title}}</title>
+</head>
+
+<body>
+	<div id='info'>
+		<a href={{firstLink}}>{{fLinkDisp}}</a>
+		<a href={{secondLink}}>{{sLinkDisp}}</a>
+		<div id='box'>
+			<h1>About me</h1>
+			<p>I'm Stephen Cheng.<br>
+			27 years old.<br> 
+			I am a student of BCIT.<br> 
+			I live in Coquitlam.<br>
+			</p>
+			<img src={{image}} />
+				{{> footer}}
+		</div>
+	</div>
+</body>
+
+</html>
