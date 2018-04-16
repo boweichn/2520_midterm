@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset='utf-8'>
+	<title>Maint</title>
+</head>
+
+<body>
+	<form class="textContainer" action='/postResult' method='POST'>
+                       
+        <label>Topic:</label>
+        <input class="Title" id='topTitle' name='topTitle' type="text">
+        <br>
+                       
+        <br>
+        <label>Content:</label>
+        <textarea class="Text" id='topPost' name='topContent'></textarea>
+                       
+        <br>
+        <input type="submit">
+   	</form>
+
+
+</body>
+
+	{{> footer}}
+<!--<footer>
+	<p>Copyright {{year}}</p>
+</footer> -->
+
+</html>

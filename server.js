@@ -4,6 +4,8 @@ const hbs = require('hbs')
 const geocode = require('./WeatherCopy/gmaps');
 const currentWeather = require('./WeatherCopy/weather');
 const fs = require('fs');
+const bodyParser = require('body-parser');
+const urlencodedParser = bodyParser.urlencoded({ extended: false});
 
 var app = express();
 var strMain = 'About Me Page'
@@ -37,12 +39,15 @@ hbs.registerHelper('getCurrentYear', () => {
 });
 
 app.get('/', (request, response) => {
-	var strMain = 'About Me Page'
-	var strWeath = 'Check Local Weather'
-	var showMainLink = strMain.link('/info')
-	var showWeathlink = strWeath.link('/weather/vancouver')
-	response.send(`${showMainLink}	${showWeathlink}`)
+	response.render('main.hbs', {})
 });
+
+app.post('/postResult', urlencodedParser, (request, response) => {
+	var topTitle = request.body.topTitle
+	var topContent = request.body.topContent
+	console.log(topTitle + ' ' + topContent);
+	response.redirect('/info')
+})
 
 app.get('/info', (request, response) => {
 	response.render('me.hbs', {
